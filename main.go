@@ -26,9 +26,9 @@ var cities = []city{
 func main() {
     router := gin.Default()
     router.GET("/city", getCity)
-	router.POST("/city", postCity)
+    router.POST("/city", postCity)
     router.GET("/city/:id", getCityByID)
-	router.GET("/_health", getHealth)
+    router.GET("/_health", getHealth)
 
     router.Run("localhost:8080")
 }
