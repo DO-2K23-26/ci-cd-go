@@ -1,2 +1,3 @@
-# cicd-go
-Théo, Hugo, DorianG.  Stack: Go, Gin
+# ci-cd-go
+Théo, Hugo, DorianG
+Stack: Go
