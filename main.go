@@ -1,13 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 // city represents data about a record city.
-type city struct {
+type City struct {
+	gorm.Model
 	ID         string  `json:"id"`
 	Name       string  `json:"name"`
 	Country    string  `json:"country"`
@@ -15,15 +20,29 @@ type city struct {
 }
 
 // cities slice to seed record city data.
-var cities = []city{
+var cities = []City{
 	{ID: "1", Name: "Eaubonne", Country: "Rance", Population: 69420},
 	{ID: "2", Name: "Cupacabana", Country: "Betweenmexicoandbuenosaires", Population: 8},
 	{ID: "3", Name: "Worchestershire", Country: "Unitedkingdomland", Population: 49.9999},
 }
 
+
 /////// SHOULD BE REPLACED BY A CALL TO A BDD
 
 func main() {
+	db, err := gorm.Open(postgres.Open("test.db"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	// Migrate the schema
+	db.AutoMigrate(&City{})
+
+    // Insert the cities data in the database
+    for _, city := range cities {
+        db.Create(&city)
+    }
+
 	router := gin.Default()
 	router.GET("/city", getCity)
 	router.POST("/city", postCity)
@@ -32,7 +51,7 @@ func main() {
 
 	err := router.Run("0.0.0.0:8080")
 	if err != nil {
-		panic("Failed to start server")
+		panic(fmt.Sprintf("Failed to start server: %s", err))
 	}
 }
 
