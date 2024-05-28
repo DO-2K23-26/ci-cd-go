@@ -10,3 +10,7 @@ docker build -t gotestiste .
 ```sh
 docker run -p 8080:8080 gotestiste
 ```
+
+```sh
+go run main.go
+```
