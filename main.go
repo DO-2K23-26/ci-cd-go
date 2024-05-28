@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 
@@ -29,9 +30,19 @@ var cities = []City{
 /////// SHOULD BE REPLACED BY A CALL TO A BDD
 
 func main() {
-	db, err := gorm.Open(postgres.Open("test.db"), &gorm.Config{})
+	// Get the environment variables
+	apiAddr := os.Getenv("CITY_API_ADDR")
+	apiPort := os.Getenv("CITY_API_PORT")
+
+	dbURL := os.Getenv("CITY_API_DB_URL")
+	dbUser := os.Getenv("CITY_API_DB_USER")
+	dbPassword := os.Getenv("CITY_API_DB_PWD")
+	dbName := os.Getenv("CITY_API_DB_NAME")
+
+	dbconn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5432", dbURL, dbUser, dbPassword, dbName)
+	db, err := gorm.Open(postgres.Open(dbconn), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database")
+		panic(fmt.Sprintf("failed to connect database: %s", err))
 	}
 
 	// Migrate the schema
@@ -39,7 +50,10 @@ func main() {
 
 	// Insert the cities data in the database
 	for _, city := range cities {
-		db.Create(&city)
+        err := db.Create(&city).Error
+        if err != nil {
+            fmt.Printf("Failed to insert city: %s\n", err)
+        }
 	}
 
 	router := gin.Default()
@@ -48,7 +62,7 @@ func main() {
 	router.GET("/city/:id", getCityByID)
 	router.GET("/_health", getHealth)
 
-	err := router.Run("0.0.0.0:8080")
+	err = router.Run("%s:%s", apiAddr, apiPort)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to start server: %s", err))
 	}
@@ -61,7 +75,7 @@ func getCity(c *gin.Context) {
 
 // postCity adds an city from JSON received in the request body.
 func postCity(c *gin.Context) {
-	var newAlbum city
+	var newAlbum City
 
 	// Call BindJSON to bind the received JSON to
 	// newAlbum.
