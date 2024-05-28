@@ -26,7 +26,6 @@ var cities = []City{
 	{ID: "3", Name: "Worchestershire", Country: "Unitedkingdomland", Population: 49.9999},
 }
 
-
 /////// SHOULD BE REPLACED BY A CALL TO A BDD
 
 func main() {
@@ -38,10 +37,10 @@ func main() {
 	// Migrate the schema
 	db.AutoMigrate(&City{})
 
-    // Insert the cities data in the database
-    for _, city := range cities {
-        db.Create(&city)
-    }
+	// Insert the cities data in the database
+	for _, city := range cities {
+		db.Create(&city)
+	}
 
 	router := gin.Default()
 	router.GET("/city", getCity)
