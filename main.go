@@ -30,7 +30,10 @@ func main() {
 	router.GET("/city/:id", getCityByID)
 	router.GET("/_health", getHealth)
 
-	router.Run("0.0.0.0:8080")
+	err := router.Run("0.0.0.0:8080")
+	if err != nil {
+		panic("Failed to start server")
+	}
 }
 
 // getCity responds with the list of all cities as JSON.
