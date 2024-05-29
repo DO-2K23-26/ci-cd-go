@@ -50,27 +50,33 @@ func main() {
 
 	// Insert the cities data in the database
 	for _, city := range cities {
-        err := db.Create(&city).Error
-        if err != nil {
-            fmt.Printf("Failed to insert city: %s\n", err)
-        }
+		err := db.Create(&city).Error
+		if err != nil {
+			fmt.Printf("Failed to insert city: %s\n", err)
+		}
 	}
 
 	router := gin.Default()
-	router.GET("/city", getCity)
+	router.GET("/city", func(c *gin.Context) { getCity(db, c) })
 	router.POST("/city", postCity)
 	router.GET("/city/:id", getCityByID)
 	router.GET("/_health", getHealth)
 
-	err = router.Run("%s:%s", apiAddr, apiPort)
+	err = router.Run(fmt.Sprintf("%s:%s", apiAddr, apiPort))
 	if err != nil {
 		panic(fmt.Sprintf("Failed to start server: %s", err))
 	}
 }
 
-// getCity responds with the list of all cities as JSON.
-func getCity(c *gin.Context) {
+func getCity(db *gorm.DB, c *gin.Context) error {
+	var cities []City
+	err := db.Find(&cities).Error
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "failed to get cities"})
+		return err
+	}
 	c.IndentedJSON(http.StatusOK, cities)
+	return nil
 }
 
 // postCity adds an city from JSON received in the request body.
