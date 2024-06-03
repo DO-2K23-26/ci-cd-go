@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -75,6 +76,7 @@ func main() {
 		}
 	})
 	router.GET("/_health", getHealth)
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	err = router.Run(fmt.Sprintf("%s:%s", apiAddr, apiPort))
 	if err != nil {

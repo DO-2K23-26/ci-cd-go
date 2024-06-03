@@ -1,0 +1,16 @@
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+  - name: Prostgres
+    type: postgres
+    url: db:5432
+    user: myuser
+    secureJsonData:
+      password: mypassword
+    jsonData:
+      database: city_api
+      sslmode: disable
