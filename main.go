@@ -28,13 +28,13 @@ type City struct {
 
 func main() {
 	// Get the environment variables
-	apiAddr := os.Getenv("CITY_API_ADDR")
-	apiPort := os.Getenv("CITY_API_PORT")
+	apiAddr := "0.0.0.0"
+	apiPort := "8080"
 
-	dbURL := os.Getenv("CITY_API_DB_URL")
-	dbUser := os.Getenv("CITY_API_DB_USER")
-	dbPassword := os.Getenv("CITY_API_DB_PWD")
-	dbName := os.Getenv("CITY_API_DB_NAME")
+	dbURL := "0.0.0.0"
+	dbUser := "gocity"
+	dbPassword := "gocity-pwd"
+	dbName := "gocity"
 
 	path := "cities.json"
 
@@ -45,7 +45,10 @@ func main() {
 	}
 
 	// Migrate the schema
-	db.AutoMigrate(&City{})
+	err = db.AutoMigrate(&City{})
+	if err != nil {
+		panic(fmt.Sprintf("failed to migrate schema: %s", err))
+	}
 
 	// Seed the database
 	seedData(path, db)
