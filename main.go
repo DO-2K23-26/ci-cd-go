@@ -61,13 +61,13 @@ func main() {
 		}
 	})
 	router.POST("/city", func(c *gin.Context) {
-		postCity(db, c)
+		err := postCity(db, c)
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "failed to post"})
 		}
 	})
 	router.GET("/city/:id", func(c *gin.Context) {
-		getCityByID(db, c)
+		err := getCityByID(db, c)
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "failed to get city"})
 		}
@@ -112,23 +112,24 @@ func postCity(db *gorm.DB, c *gin.Context) error {
 
 // getCityByID locates the city whose ID value matches the id
 // parameter sent by the client, then returns that city as a response.
-func getCityByID(db *gorm.DB, c *gin.Context) {
+func getCityByID(db *gorm.DB, c *gin.Context) error {
 	var city City
 	id := c.Param("id")
 	result := db.First(&city, id)
 	if result.Error != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "city not found"})
-		return
+		return result.Error
 	}
 	c.IndentedJSON(http.StatusOK, city)
+	return nil
 }
 
-func seedData(path string, db *gorm.DB) {
+func seedData(path string, db *gorm.DB) error {
 	// Open the cities JSON file, handle errors
 	file, err := os.Open(path)
 	if err != nil {
 		fmt.Printf("Failed to open file: %s\n", err)
-		return
+		return err
 	}
 	defer file.Close()
 
@@ -138,7 +139,7 @@ func seedData(path string, db *gorm.DB) {
 	err = decoder.Decode(&cities)
 	if err != nil {
 		fmt.Printf("Failed to decode JSON: %s\n", err)
-		return
+		return err
 	}
 
 	// Seed (write) array to database
@@ -148,6 +149,7 @@ func seedData(path string, db *gorm.DB) {
 			fmt.Printf("Failed to insert city: %s\n", err)
 		}
 	}
+	return nil
 }
 
 // getHealth responds with the health of the service
