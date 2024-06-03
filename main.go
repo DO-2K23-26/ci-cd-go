@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+
 	"fmt"
 	"net/http"
 	"os"
@@ -13,18 +15,13 @@ import (
 
 // city represents data about a record city.
 type City struct {
-	gorm.Model
-	ID         string  `json:"id"`
-	Name       string  `json:"name"`
-	Country    string  `json:"country"`
-	Population float64 `json:"population"`
-}
-
-// cities slice to seed record city data.
-var cities = []City{
-	{ID: "1", Name: "Eaubonne", Country: "Rance", Population: 69420},
-	{ID: "2", Name: "Cupacabana", Country: "Betweenmexicoandbuenosaires", Population: 8},
-	{ID: "3", Name: "Worchestershire", Country: "Unitedkingdomland", Population: 49.9999},
+	ID             uint    `json:"id" gorm:"primaryKey;not null" `
+	DepartmentCode string  `json:"department_code"`
+	InseeCode      string  `json:"insee_code"`
+	ZipCode        string  `json:"zip_code"`
+	Name           string  `json:"name"`
+	Lat            float64 `json:"lat"`
+	Lon            float64 `json:"lon"`
 }
 
 /////// SHOULD BE REPLACED BY A CALL TO A BDD
@@ -39,6 +36,8 @@ func main() {
 	dbPassword := os.Getenv("CITY_API_DB_PWD")
 	dbName := os.Getenv("CITY_API_DB_NAME")
 
+	path := "cities.json"
+
 	dbconn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5432", dbURL, dbUser, dbPassword, dbName)
 	db, err := gorm.Open(postgres.Open(dbconn), &gorm.Config{})
 	if err != nil {
@@ -48,18 +47,13 @@ func main() {
 	// Migrate the schema
 	db.AutoMigrate(&City{})
 
-	// Insert the cities data in the database
-	for _, city := range cities {
-		err := db.Create(&city).Error
-		if err != nil {
-			fmt.Printf("Failed to insert city: %s\n", err)
-		}
-	}
+	// Seed the database
+	seedData(path, db)
 
 	router := gin.Default()
 	router.GET("/city", func(c *gin.Context) { getCity(db, c) })
-	router.POST("/city", postCity)
-	router.GET("/city/:id", getCityByID)
+	router.POST("/city", func(c *gin.Context) { postCity(db, c) })
+	router.GET("/city/:id", func(c *gin.Context) { getCityByID(db, c) })
 	router.GET("/_health", getHealth)
 
 	err = router.Run(fmt.Sprintf("%s:%s", apiAddr, apiPort))
@@ -80,34 +74,62 @@ func getCity(db *gorm.DB, c *gin.Context) error {
 }
 
 // postCity adds an city from JSON received in the request body.
-func postCity(c *gin.Context) {
-	var newAlbum City
-
-	// Call BindJSON to bind the received JSON to
-	// newAlbum.
-	if err := c.BindJSON(&newAlbum); err != nil {
-		return
+func postCity(db *gorm.DB, c *gin.Context) error {
+	var newCity City
+	err := c.BindJSON(&newCity)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "invalid request payload"})
+		return err
 	}
 
-	// Add the new city to the slice.
-	cities = append(cities, newAlbum)
-	c.IndentedJSON(http.StatusCreated, newAlbum)
+	err = db.Create(&newCity).Error
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "failed to create city"})
+		return err
+	}
+
+	c.IndentedJSON(http.StatusCreated, newCity)
+	return nil
 }
 
 // getCityByID locates the city whose ID value matches the id
 // parameter sent by the client, then returns that city as a response.
-func getCityByID(c *gin.Context) {
+func getCityByID(db *gorm.DB, c *gin.Context) {
+	var city City
 	id := c.Param("id")
+	result := db.First(&city, id)
+	if result.Error != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "city not found"})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, city)
+}
 
-	// Loop over the list of cities, looking for
-	// an city whose ID value matches the parameter.
-	for _, a := range cities {
-		if a.ID == id {
-			c.IndentedJSON(http.StatusOK, a)
-			return
+func seedData(path string, db *gorm.DB) {
+	// Open the cities JSON file, handle errors
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Printf("Failed to open file: %s\n", err)
+		return
+	}
+	defer file.Close()
+
+	// Decode the JSON cities file into an array
+	decoder := json.NewDecoder(file)
+	var cities []City
+	err = decoder.Decode(&cities)
+	if err != nil {
+		fmt.Printf("Failed to decode JSON: %s\n", err)
+		return
+	}
+
+	// Seed (write) array to database
+	for _, city := range cities {
+		err := db.Create(&city).Error
+		if err != nil {
+			fmt.Printf("Failed to insert city: %s\n", err)
 		}
 	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "city not found"})
 }
 
 // getHealth responds with the health of the service
