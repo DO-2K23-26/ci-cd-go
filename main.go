@@ -53,7 +53,7 @@ func main() {
 	// Seed the database
 	err = seedData(path, db)
 	if err != nil {
-		fmt.Sprintf("failed to seed database: %s", err)
+		fmt.Printf("failed to seed database: %s", err)
 	}
 
 	router := gin.Default()
