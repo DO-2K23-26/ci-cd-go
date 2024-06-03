@@ -9,8 +9,12 @@ services:
       POSTGRES_DB: gocity
     ports:
       - "5432:5432"
-    healthcheck:  # To make sure it's ready before go tries to connect
-      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+    healthcheck: # To make sure it's ready before go tries to connect
+      test:
+        [
+          "CMD-SHELL",
+          "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'",
+        ]
 
   gocity:
     build:
@@ -27,4 +31,20 @@ services:
       - 8080:8080
     depends_on:
       db:
-        condition: service_healthy  # Runs the healthcheck test
+        condition: service_healthy # Runs the healthcheck test
+
+  prometheus:
+    image: prom/prometheus:v2.44.0
+    volumes:
+      - "./prometheus.yaml:/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+    depends_on:
+      - gocity
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    depends_on:
+      - gocity
