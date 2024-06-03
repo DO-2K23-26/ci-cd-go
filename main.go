@@ -28,13 +28,13 @@ type City struct {
 
 func main() {
 	// Get the environment variables
-	apiAddr := "0.0.0.0"
-	apiPort := "8080"
+	apiAddr := os.Getenv("CITY_API_ADDR")
+	apiPort := os.Getenv("CITY_API_PORT")
 
-	dbURL := "0.0.0.0"
-	dbUser := "gocity"
-	dbPassword := "gocity-pwd"
-	dbName := "gocity"
+	dbURL := os.Getenv("CITY_API_DB_URL")
+	dbUser := os.Getenv("CITY_API_DB_USER")
+	dbPassword := os.Getenv("CITY_API_DB_PWD")
+	dbName := os.Getenv("CITY_API_DB_NAME")
 
 	path := "cities.json"
 
@@ -54,9 +54,24 @@ func main() {
 	seedData(path, db)
 
 	router := gin.Default()
-	router.GET("/city", func(c *gin.Context) { getCity(db, c) })
-	router.POST("/city", func(c *gin.Context) { postCity(db, c) })
-	router.GET("/city/:id", func(c *gin.Context) { getCityByID(db, c) })
+	router.GET("/city", func(c *gin.Context) {
+		err := getCity(db, c)
+		if err != nil {  // Error handling
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "failed to get cities"})
+		}
+	})
+	router.POST("/city", func(c *gin.Context) {
+		postCity(db, c)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "failed to post"})
+		}
+	})
+	router.GET("/city/:id", func(c *gin.Context) {
+		getCityByID(db, c)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "failed to get city"})
+		}
+	})
 	router.GET("/_health", getHealth)
 
 	err = router.Run(fmt.Sprintf("%s:%s", apiAddr, apiPort))
