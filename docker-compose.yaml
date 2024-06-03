@@ -1,5 +1,30 @@
-version: '3'
+version: "3"
 
 services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: gocity
+      POSTGRES_PASSWORD: gocity-pwd
+      POSTGRES_DB: gocity
+    ports:
+      - "5432:5432"
+    healthcheck:  # To make sure it's ready before go tries to connect
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+
   gocity:
-  
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      CITY_API_ADDR: 0.0.0.0
+      CITY_API_PORT: 8080
+      CITY_API_DB_URL: db #gocity.hponthieu.com
+      CITY_API_DB_USER: gocity
+      CITY_API_DB_PWD: gocity-pwd
+      CITY_API_DB_NAME: gocity
+    ports:
+      - 8080:8080
+    depends_on:
+      db:
+        condition: service_healthy  # Runs the healthcheck test
