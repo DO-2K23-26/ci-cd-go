@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// city represents data about a record city.
+// The City struct represents data about a record city.
 type City struct {
 	ID             uint    `json:"id" gorm:"primaryKey;not null" `
 	DepartmentCode string  `json:"department_code"`
@@ -24,7 +24,6 @@ type City struct {
 	Lon            float64 `json:"lon"`
 }
 
-/////// SHOULD BE REPLACED BY A CALL TO A BDD
 
 func main() {
 	// Get the environment variables
