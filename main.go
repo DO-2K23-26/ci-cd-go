@@ -51,7 +51,10 @@ func main() {
 	}
 
 	// Seed the database
-	seedData(path, db)
+	err = seedData(path, db)
+	if err != nil {
+		fmt.Sprintf("failed to seed database: %s", err)
+	}
 
 	router := gin.Default()
 	router.GET("/city", func(c *gin.Context) {
