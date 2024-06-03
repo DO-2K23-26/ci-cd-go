@@ -48,5 +48,7 @@ services:
       - 3000:3000
     volumes:
       - ./monitor/graf/datasources:/etc/grafana/provisioning/datasources
+      - ./monitor/graf/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitor/graf/resources:/var/lib/grafana/dashboards
     depends_on:
       - gocity
