@@ -8,6 +8,7 @@ on:
 jobs:
   docker:
     name: Pull Docker Image
+    permissions: write-all
     runs-on: ubuntu-latest
     env:
       PREFIX_TAG: ${{ secrets.DOCKER_USERNAME }}/${{ vars.APP_NAME }}
@@ -46,6 +47,7 @@ jobs:
           docker push ${{ env.PREFIX_TAG }}:latest
       
       - name: Create release
+        id: create_release
         uses: actions/create-release@v1.1.4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
