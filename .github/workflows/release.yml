@@ -44,6 +44,20 @@ jobs:
         run: | 
           docker push ${{ env.PREFIX_TAG }}:${{ env.VERSION }}
           docker push ${{ env.PREFIX_TAG }}:latest
+      
+      - name: Create release
+        uses: actions/create-release@v1.1.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          body: |
+            Release ${{ env.VERSION }}
+            Commit: ${{ steps.sha.outputs.sha_short }}
+            Docker hub: [images here](https://hub.docker.com/repository/docker/rapidement/city-api/general)
   
   # deploy:
   #   name: Deploy Docker Image
