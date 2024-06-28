@@ -24,7 +24,6 @@ func main() {
 	dbUser := os.Getenv("CITY_API_DB_USER")
 	dbPassword := os.Getenv("CITY_API_DB_PWD")
 	dbName := os.Getenv("CITY_API_DB_NAME")
-
 	dbconn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5432", dbURL, dbUser, dbPassword, dbName)
 	db, err := gorm.Open(postgres.Open(dbconn), &gorm.Config{})
 	if err != nil {
