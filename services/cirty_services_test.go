@@ -14,7 +14,10 @@ func setupTestDB() *gorm.DB {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&models.City{})
+	err = db.AutoMigrate(&models.City{})
+	if err != nil {
+		panic("failed to migrate database")
+	}
 	return db
 }
 
