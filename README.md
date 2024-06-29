@@ -1,16 +1,9 @@
 # ci-cd-go
-Théo, Hugo, DorianG
-Stack: Go
-
-
-```sh
-docker build -t gotestiste .
-```
+Théo, Hugo, DorianG  
+Stack: Go, Gin, PostgreSQL, GitHub Actions
 
 ```sh
-docker run -p 8080:8080 gotestiste
+docker compose up -d --build
 ```
 
-```sh
-go run main.go
-```
+Connect to `localhost:2022/city`
