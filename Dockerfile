@@ -31,7 +31,7 @@ WORKDIR /
 COPY --from=build-stage /goserver /goserver
 COPY cities.json ./
 
-EXPOSE 8080
+EXPOSE 2022
 
 RUN useradd -rm -d /home/nonroot -s /bin/bash -u 1001 nonroot
 USER nonroot
