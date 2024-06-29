@@ -7,3 +7,5 @@ docker compose up -d --build
 ```
 
 Connect to `localhost:2022/city`
+
+Docker hub : https://hub.docker.com/repository/docker/rapidement/city-api/general
