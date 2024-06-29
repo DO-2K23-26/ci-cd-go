@@ -21,7 +21,8 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6.0.1
         with:
-          version: v1.56.0
+          version: latest
+          args: --timeout=10m
 
   test:
     name: Test Go project
